@@ -123,12 +123,12 @@ async function seed() {
     // Get counts
     const userCount = await client.query('SELECT COUNT(*) FROM app.users');
     const productCount = await client.query('SELECT COUNT(*) FROM app.products');
-    const orderCount = await client.query('SELECT COUNT(*) FROM app.orders');
+    const orderCountResult = await client.query('SELECT COUNT(*) FROM app.orders');
 
     console.log('✅ Seeding completed successfully!');
     console.log(`   Users: ${userCount.rows[0].count}`);
     console.log(`   Products: ${productCount.rows[0].count}`);
-    console.log(`   Orders: ${orderCount.rows[0].count}`);
+    console.log(`   Orders: ${orderCountResult.rows[0].count}`);
     
   } catch (error) {
     await client.query('ROLLBACK');
