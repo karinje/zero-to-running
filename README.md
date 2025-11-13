@@ -58,6 +58,18 @@ make dev JOB_FAMILY=ml-engineer NO_REDIS=true
 make dev JOB_FAMILY=full-stack NO_REDIS=true NO_FRONTEND=true
 ```
 
+**Customize job families:**
+
+Edit `config/job-families.yml` to create your own configurations or modify existing ones:
+```yaml
+job_families:
+  your-custom-setup:
+    components: [postgres, backend, redis]
+    description: "Your custom combination"
+```
+
+Then use it: `make dev JOB_FAMILY=your-custom-setup`
+
 ## 📋 Prerequisites
 
 - **Docker Desktop** 24.0+ installed and running
@@ -178,7 +190,7 @@ See [PROFILES.md](docs/PROFILES.md) for details.
 - ✅ **Security Scanning** - Secret detection and vulnerability scanning
 - ✅ **Database Seeding** - Sample data for testing (12 users, 25 products)
 
-## 🔒 SSL/HTTPS (Optional)
+## 🔒 SSL/HTTPS
 
 Enable HTTPS for OAuth flows, secure cookies, or mobile device testing:
 
