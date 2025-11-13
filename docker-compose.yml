@@ -24,7 +24,7 @@ services:
   redis:
     image: redis:7.0.5-alpine
     container_name: wander-redis
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD:-dev_redis_password}
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-dev_redis_password}
     ports:
