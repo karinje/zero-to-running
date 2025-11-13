@@ -343,17 +343,17 @@ VITE_APP_NAME=Wander Dev Environment
 Create comprehensive Makefile with developer-friendly commands for managing the entire environment with a single interface.
 
 #### Tasks
-- [ ] Create Makefile with all core commands
-- [ ] Add dev target (start all services)
-- [ ] Add down target (stop all services)
-- [ ] Add clean target (remove volumes and data)
-- [ ] Add logs target (view service logs)
-- [ ] Add health target (check service health)
-- [ ] Add help target (show available commands)
-- [ ] Add ps target (show running containers)
-- [ ] Add restart target (restart specific service)
-- [ ] Add shell targets (access container shells)
-- [ ] Add proper error handling and colors
+- [x] Create Makefile with all core commands
+- [x] Add dev target (start all services)
+- [x] Add down target (stop all services)
+- [x] Add clean target (remove volumes and data)
+- [x] Add logs target (view service logs)
+- [x] Add health target (check service health)
+- [x] Add help target (show available commands)
+- [x] Add ps target (show running containers)
+- [x] Add restart target (restart specific service)
+- [x] Add shell targets (access container shells)
+- [x] Add proper error handling and colors
 
 #### Files Created
 ```
@@ -404,14 +404,14 @@ make test         # Run all tests
 ```
 
 #### Acceptance Criteria
-- [ ] `make dev` starts all services successfully
-- [ ] `make down` stops all services cleanly
-- [ ] `make clean` removes all volumes
-- [ ] `make logs` shows color-coded logs
-- [ ] `make health` reports status of each service
-- [ ] `make help` displays all commands with descriptions
-- [ ] All commands have proper error handling
-- [ ] Commands work on Mac, Linux, and Windows (WSL2)
+- [x] `make dev` starts all services successfully
+- [x] `make down` stops all services cleanly
+- [x] `make clean` removes all volumes
+- [x] `make logs` shows color-coded logs
+- [x] `make health` reports status of each service
+- [x] `make help` displays all commands with descriptions
+- [x] All commands have proper error handling
+- [x] Commands work on Mac, Linux, and Windows (WSL2)
 
 ---
 

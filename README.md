@@ -52,14 +52,48 @@ All services are containerized, isolated, and communicate via Docker networks.
 
 ## 🛠️ Common Commands
 
+### Primary Commands
 ```bash
 make dev          # Start all services
 make down         # Stop all services
-make clean        # Remove all data and volumes
-make logs         # View all service logs
-make health       # Check service health status
-make help         # Show all available commands
+make clean        # Remove all data and volumes (with confirmation)
+make restart      # Restart all services
 ```
+
+### Monitoring
+```bash
+make logs              # View all service logs (follow mode)
+make logs-frontend     # View frontend logs only
+make logs-backend      # View backend logs only
+make logs-db           # View database logs only
+make logs-redis        # View redis logs only
+make health            # Check all service health status
+make ps                # Show running containers
+```
+
+### Development
+```bash
+make shell-frontend    # Access frontend container shell
+make shell-backend     # Access backend container shell
+make shell-db          # Access postgres shell (psql)
+make shell-redis       # Access redis-cli
+```
+
+### Database Management
+```bash
+make db-seed           # Seed database with sample data (PR-009)
+make db-reset          # Drop and recreate database (with confirmation)
+make db-backup         # Backup database to backups/ directory
+make db-restore FILE=backups/backup.sql  # Restore from backup
+```
+
+### Utilities
+```bash
+make help              # Show all available commands with descriptions
+make check-docker      # Verify Docker is installed and running
+```
+
+For a complete list of commands, run `make help`.
 
 ## 📚 Documentation
 

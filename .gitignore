@@ -69,6 +69,10 @@ temp/
 postgres_data/
 redis_data/
 
+# Database backups
+backups/
+*.sql
+
 # Metrics and analytics (if collected)
 .metrics/
 *.metrics
