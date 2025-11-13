@@ -32,8 +32,14 @@ That's it! Your environment is now running.
 
 Once you run `make dev`, you'll have:
 
-- **Frontend**: React app at http://localhost:3000
+- **Frontend**: React app with Vite at http://localhost:3000
+  - Hot reload enabled for instant code changes
+  - Connects to backend API automatically
+  - Modern React 18 with React Router
 - **Backend**: Node.js API at http://localhost:4000
+  - Express server with health endpoints
+  - Connected to PostgreSQL and Redis
+  - Hot reload enabled for development
 - **Database**: PostgreSQL 15.2 at localhost:5432
   - User: `wander_user`
   - Database: `wander_dev`
@@ -62,6 +68,7 @@ make help         # Show all available commands
 - [Database Guide](docs/DATABASE.md) - PostgreSQL connection and usage
 - [Redis Guide](docs/REDIS.md) - Redis cache connection and usage
 - [Backend API](docs/BACKEND_API.md) - Backend API documentation
+- [Frontend Guide](docs/FRONTEND.md) - Frontend development guide
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
 - [API Documentation](docs/API.md) - Backend API reference
 
