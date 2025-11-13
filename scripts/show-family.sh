@@ -30,9 +30,18 @@ if command -v yq &> /dev/null; then
   DESCRIPTION=$(yq eval ".job_families.$JOB_FAMILY.description" "$FAMILIES_FILE" 2>/dev/null)
   COMPONENTS=$(yq eval ".job_families.$JOB_FAMILY.components[]" "$FAMILIES_FILE" 2>/dev/null | sort -u | tr '\n' '\n')
 else
-  # Basic parsing
-  DESCRIPTION=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "description:" | sed 's/.*description: "\(.*\)"/\1/')
-  COMPONENTS=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "    -" | sed 's/    - //' | sort -u)
+  # Basic parsing - extract section between this family and next
+  FAMILY_START=$(grep -n "^  $JOB_FAMILY:" "$FAMILIES_FILE" | cut -d: -f1)
+  NEXT_FAMILY_LINE=$(awk -v start="$FAMILY_START" 'NR > start && /^  [a-z-]*:/ {print NR; exit}' "$FAMILIES_FILE")
+  if [ -z "$NEXT_FAMILY_LINE" ]; then
+    # Last family, get to end of file
+    FAMILY_SECTION=$(sed -n "${FAMILY_START},\$p" "$FAMILIES_FILE")
+  else
+    # Get section up to next family
+    FAMILY_SECTION=$(sed -n "${FAMILY_START},$((NEXT_FAMILY_LINE-1))p" "$FAMILIES_FILE")
+  fi
+  DESCRIPTION=$(echo "$FAMILY_SECTION" | grep "description:" | sed 's/.*description: "\(.*\)"/\1/')
+  COMPONENTS=$(echo "$FAMILY_SECTION" | grep "    -" | sed 's/    - //' | sort -u)
 fi
 
 if [ -z "$DESCRIPTION" ]; then
