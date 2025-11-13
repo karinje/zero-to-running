@@ -86,10 +86,7 @@ const logger = winston.createLogger({
   exitOnError: false,
 });
 
-// Add helper method to create child logger with correlation ID
-logger.child = (meta) => {
-  return logger.child(meta);
-};
+// Winston's child method is already available, no need to override
 
 // Helper to generate correlation ID
 logger.generateCorrelationId = () => {
