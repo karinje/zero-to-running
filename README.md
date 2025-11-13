@@ -35,6 +35,9 @@ Once you run `make dev`, you'll have:
 - **Frontend**: React app at http://localhost:3000
 - **Backend**: Node.js API at http://localhost:4000
 - **Database**: PostgreSQL 15.2 at localhost:5432
+  - User: `wander_user`
+  - Database: `wander_dev`
+  - Each developer gets their own isolated database (no shared connections)
 - **Cache**: Redis 7.0.5 at localhost:6379
 
 All services are containerized, isolated, and communicate via Docker networks.
@@ -54,6 +57,7 @@ make help         # Show all available commands
 
 - [Quick Start Guide](docs/QUICK_START.md) - Detailed setup instructions
 - [Architecture Overview](docs/ARCHITECTURE.md) - System design and components
+- [Database Guide](docs/DATABASE.md) - PostgreSQL connection and usage
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
 - [API Documentation](docs/API.md) - Backend API reference
 
