@@ -49,6 +49,9 @@ module.exports = {
       logLevel: process.env.LOG_LEVEL || 'info',
       apiVersion: process.env.API_VERSION || 'v1',
       corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+      enableSSL: process.env.ENABLE_SSL === 'true',
+      sslCert: process.env.SSL_CERT_PATH || './certs/localhost-cert.pem',
+      sslKey: process.env.SSL_KEY_PATH || './certs/localhost-key.pem',
     },
   },
 };

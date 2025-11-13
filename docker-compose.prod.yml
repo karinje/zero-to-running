@@ -1,0 +1,35 @@
+# Production-Local Profile - Production config, error logging only, no sample data
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wander_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-wander_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prod_password_change_immediately}
+    labels:
+      - "com.wander.environment=production"
+      - "com.wander.profile=prod"
+
+  redis:
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-prod_redis_password_change_immediately}
+    labels:
+      - "com.wander.environment=production"
+      - "com.wander.profile=prod"
+
+  backend:
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-error}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    labels:
+      - "com.wander.environment=production"
+      - "com.wander.profile=prod"
+
+  frontend:
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+    labels:
+      - "com.wander.environment=production"
+      - "com.wander.profile=prod"
+

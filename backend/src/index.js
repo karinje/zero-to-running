@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const { validateEnv, env } = require('./config/env');
 const requestLogger = require('./middleware/requestLogger');
 const errorHandler = require('./middleware/errorHandler');
@@ -55,20 +58,54 @@ app.use(errorHandler);
 
 // Start server
 const PORT = env.server.port;
-app.listen(PORT, '0.0.0.0', () => {
-  const serverLogger = logger.child({ service: 'backend' });
-  serverLogger.info('🚀 Backend server starting...', {
-    environment: env.server.nodeEnv,
-    port: PORT,
-    apiVersion: env.server.apiVersion,
-    corsOrigin: env.server.corsOrigin,
+const serverLogger = logger.child({ service: 'backend' });
+
+if (env.server.enableSSL) {
+  // HTTPS server
+  const certPath = path.resolve(env.server.sslCert);
+  const keyPath = path.resolve(env.server.sslKey);
+  
+  if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+    serverLogger.error('SSL certificates not found', {
+      certPath,
+      keyPath,
+    });
+    serverLogger.error('Generate certificates: make generate-certs');
+    process.exit(1);
+  }
+  
+  const options = {
+    cert: fs.readFileSync(certPath),
+    key: fs.readFileSync(keyPath),
+  };
+  
+  https.createServer(options, app).listen(PORT, '0.0.0.0', () => {
+    serverLogger.info('🚀 Backend server starting (HTTPS)...', {
+      environment: env.server.nodeEnv,
+      port: PORT,
+      apiVersion: env.server.apiVersion,
+      corsOrigin: env.server.corsOrigin,
+      ssl: true,
+    });
+    serverLogger.info(`✅ Server running at https://0.0.0.0:${PORT}`);
+    serverLogger.info(`   Health check: https://0.0.0.0:${PORT}/health`);
   });
-  serverLogger.info(`✅ Server running at http://0.0.0.0:${PORT}`);
-  serverLogger.info(`   Health check: http://0.0.0.0:${PORT}/health`);
-});
+} else {
+  // HTTP server
+  app.listen(PORT, '0.0.0.0', () => {
+    serverLogger.info('🚀 Backend server starting...', {
+      environment: env.server.nodeEnv,
+      port: PORT,
+      apiVersion: env.server.apiVersion,
+      corsOrigin: env.server.corsOrigin,
+      ssl: false,
+    });
+    serverLogger.info(`✅ Server running at http://0.0.0.0:${PORT}`);
+    serverLogger.info(`   Health check: http://0.0.0.0:${PORT}/health`);
+  });
+}
 
 // Graceful shutdown
-const serverLogger = logger.child({ service: 'backend' });
 process.on('SIGTERM', () => {
   serverLogger.info('SIGTERM received, shutting down gracefully...');
   process.exit(0);

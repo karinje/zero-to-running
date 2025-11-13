@@ -78,6 +78,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: wander-backend
+    security_opt:
+      - no-new-privileges:true
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
@@ -97,6 +99,7 @@ services:
     volumes:
       - ./backend/src:/app/src
       - backend_node_modules:/app/node_modules
+      - ./certs:/app/certs:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,6 +129,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: wander-frontend
+    security_opt:
+      - no-new-privileges:true
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
       VITE_APP_NAME: ${VITE_APP_NAME:-Wander Dev Environment}
@@ -137,6 +142,7 @@ services:
       - ./frontend/public:/app/public
       - ./frontend/index.html:/app/index.html
       - frontend_node_modules:/app/node_modules
+      - ./certs:/app/certs:ro
     depends_on:
       backend:
         condition: service_started

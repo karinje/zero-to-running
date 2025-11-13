@@ -1,0 +1,35 @@
+# Staging Profile - Production-like config, info logging, minimal sample data
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wander_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-wander_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_password_change_in_prod}
+    labels:
+      - "com.wander.environment=staging"
+      - "com.wander.profile=staging"
+
+  redis:
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-staging_redis_password}
+    labels:
+      - "com.wander.environment=staging"
+      - "com.wander.profile=staging"
+
+  backend:
+    environment:
+      NODE_ENV: ${NODE_ENV:-staging}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    labels:
+      - "com.wander.environment=staging"
+      - "com.wander.profile=staging"
+
+  frontend:
+    environment:
+      NODE_ENV: ${NODE_ENV:-staging}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+    labels:
+      - "com.wander.environment=staging"
+      - "com.wander.profile=staging"
+

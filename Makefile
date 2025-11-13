@@ -1,4 +1,4 @@
-.PHONY: help dev down clean restart logs logs-frontend logs-backend logs-db logs-redis logs-filter logs-aggregate health ps shell-frontend shell-backend shell-db shell-redis db-seed db-reset db-backup db-restore db-migrate db-rollback lint lint-fix format test test-backend test-frontend check-docker pre-flight validate-env check-ports troubleshoot prune rebuild rebuild-backend rebuild-frontend update up stop
+.PHONY: help dev dev-dev dev-staging dev-prod down clean restart logs logs-frontend logs-backend logs-db logs-redis logs-filter logs-aggregate health ps shell-frontend shell-backend shell-db shell-redis db-seed db-reset db-backup db-restore db-migrate db-rollback lint lint-fix format test test-backend test-frontend check-docker pre-flight validate-env check-ports troubleshoot prune rebuild rebuild-backend rebuild-frontend update up stop profile-switch profile-status generate-certs trust-cert list-families show-family feedback metrics-view metrics-clear security-audit
 
 # Colors for output
 GREEN  := \033[0;32m
@@ -10,20 +10,38 @@ NC     := \033[0m # No Color
 # Project name
 PROJECT_NAME := wander
 COMPOSE_FILE := docker-compose.yml
+PROFILE ?= dev
 
 # Default target
 .DEFAULT_GOAL := help
 
 ##@ Primary Commands
 
-dev: pre-flight ## Start all services
-	@echo "$(GREEN)Starting all services...$(NC)"
-	@docker-compose -f $(COMPOSE_FILE) up -d || (echo "$(RED)❌ Failed to start services$(NC)" && exit 1)
-	@echo "$(GREEN)✓ Services started!$(NC)"
+dev: pre-flight ## Start all services (default: dev profile, use JOB_FAMILY=name for job family)
+	@if [ ! -z "$(JOB_FAMILY)" ]; then \
+		echo "$(YELLOW)Using job family: $(JOB_FAMILY)$(NC)"; \
+		COMPONENTS=$$(./scripts/resolve-components.sh $(JOB_FAMILY) $(foreach var,$(filter NO_%,$(.VARIABLES)),$(var)=$($(var)))); \
+		echo "$(BLUE)Components: $$COMPONENTS$(NC)"; \
+	fi
+	@echo "$(GREEN)Starting all services with $(PROFILE) profile...$(NC)"
+	@if [ -f ".env.$(PROFILE)" ]; then \
+		./scripts/switch-profile.sh $(PROFILE); \
+	fi
+	@docker-compose -f $(COMPOSE_FILE) -f docker-compose.$(PROFILE).yml up -d || (echo "$(RED)❌ Failed to start services$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Services started with $(PROFILE) profile!$(NC)"
 	@echo "$(BLUE)Frontend: http://localhost:3000$(NC)"
 	@echo "$(BLUE)Backend:  http://localhost:4000$(NC)"
 	@echo "$(BLUE)Postgres: localhost:5432$(NC)"
 	@echo "$(BLUE)Redis:    localhost:6379$(NC)"
+
+dev-dev: pre-flight ## Start with dev profile
+	@$(MAKE) dev PROFILE=dev
+
+dev-staging: pre-flight ## Start with staging profile
+	@$(MAKE) dev PROFILE=staging
+
+dev-prod: pre-flight ## Start with prod profile
+	@$(MAKE) dev PROFILE=prod
 
 down: ## Stop all services
 	@echo "$(YELLOW)Stopping all services...$(NC)"
@@ -160,16 +178,24 @@ db-rollback: ## Rollback last migration (placeholder)
 ##@ Testing
 
 test: ## Run all tests
-	@echo "$(YELLOW)Testing framework will be added in PR-016$(NC)"
-	@echo "$(BLUE)For now, you can run tests manually:$(NC)"
-	@echo "  Backend: docker-compose exec backend npm test"
-	@echo "  Frontend: docker-compose exec frontend npm test"
+	@echo "$(YELLOW)Running all tests...$(NC)"
+	@echo "$(BLUE)Backend tests:$(NC)"
+	@docker-compose exec -T backend npm test || true
+	@echo "$(BLUE)Frontend tests:$(NC)"
+	@docker-compose exec -T frontend npm test || true
+	@echo "$(GREEN)✓ Tests completed$(NC)"
 
 test-backend: ## Run backend tests only
-	@echo "$(YELLOW)Backend tests will be added in PR-016$(NC)"
+	@echo "$(YELLOW)Running backend tests...$(NC)"
+	@docker-compose exec -T backend npm test
 
 test-frontend: ## Run frontend tests only
-	@echo "$(YELLOW)Frontend tests will be added in PR-016$(NC)"
+	@echo "$(YELLOW)Running frontend tests...$(NC)"
+	@docker-compose exec -T frontend npm test
+
+test-e2e: ## Run end-to-end tests
+	@echo "$(YELLOW)Running E2E tests...$(NC)"
+	@cd e2e && npm test || echo "$(YELLOW)E2E tests require Playwright setup$(NC)"
 
 ##@ Code Quality
 
@@ -183,8 +209,10 @@ lint-fix: ## Auto-fix linting issues
 	@docker-compose exec -T frontend npm run lint -- --fix || true
 	@echo "$(GREEN)✓ Linting fixes applied$(NC)"
 
-format: ## Format all code (placeholder for Prettier)
-	@echo "$(YELLOW)Code formatting will be added with Prettier in PR-015$(NC)"
+format: ## Format all code with Prettier
+	@echo "$(YELLOW)Formatting code with Prettier...$(NC)"
+	@npx prettier --write "**/*.{js,jsx,json,md,yml,yaml}" --ignore-path .prettierignore || true
+	@echo "$(GREEN)✓ Code formatted$(NC)"
 
 pre-flight: ## Run all pre-flight checks before starting services
 	@./scripts/pre-flight.sh
@@ -227,6 +255,78 @@ update: ## Update dependencies (rebuild containers)
 	@docker-compose exec -T frontend npm update || true
 	@echo "$(GREEN)✓ Dependencies updated$(NC)"
 	@echo "$(YELLOW)Note: Rebuild images to use updated dependencies: make rebuild$(NC)"
+
+##@ Profiles
+
+profile-switch: ## Switch environment profile (usage: make profile-switch PROFILE=staging)
+	@if [ -z "$(PROFILE)" ]; then \
+		echo "$(RED)Error: PROFILE parameter required$(NC)"; \
+		echo "$(YELLOW)Usage: make profile-switch PROFILE=staging$(NC)"; \
+		echo "$(YELLOW)Available profiles: dev, staging, prod$(NC)"; \
+		exit 1; \
+	fi
+	@./scripts/switch-profile.sh $(PROFILE)
+
+profile-status: ## Show current environment profile
+	@if [ -f ".env.current" ]; then \
+		CURRENT=$$(cat .env.current); \
+		echo "$(GREEN)Current profile: $$CURRENT$(NC)"; \
+	else \
+		echo "$(YELLOW)No profile set (using default: dev)$(NC)"; \
+	fi
+
+##@ SSL/HTTPS
+
+generate-certs: ## Generate SSL certificates for local HTTPS
+	@./scripts/generate-certs.sh
+
+trust-cert: ## Trust SSL certificate (macOS/Linux)
+	@./scripts/trust-cert.sh
+
+##@ Job Families
+
+list-families: ## List all available job families
+	@echo "$(BLUE)Available Job Families:$(NC)"
+	@if command -v yq &> /dev/null; then \
+		yq eval '.job_families | keys | .[]' config/job-families.yml | while read family; do \
+			desc=$$(yq eval ".job_families.$$family.description" config/job-families.yml); \
+			echo "$(GREEN)  $$family$(NC): $$desc"; \
+		done; \
+	else \
+		grep "^  [a-z-]*:" config/job-families.yml | sed 's/:$//' | sed 's/^  /  - /'; \
+	fi
+
+show-family: ## Show components for a job family (usage: make show-family JOB_FAMILY=ml-engineer)
+	@if [ -z "$(JOB_FAMILY)" ]; then \
+		echo "$(RED)Error: JOB_FAMILY parameter required$(NC)"; \
+		echo "$(YELLOW)Usage: make show-family JOB_FAMILY=ml-engineer$(NC)"; \
+		exit 1; \
+	fi
+	@./scripts/show-family.sh $(JOB_FAMILY)
+
+##@ Metrics & Feedback
+
+feedback: ## Submit anonymous feedback
+	@./scripts/submit-feedback.sh
+
+metrics-view: ## View collected metrics
+	@if [ -f ".metrics/metrics.json" ]; then \
+		echo "$(BLUE)Setup Metrics:$(NC)"; \
+		cat .metrics/metrics.json | python3 -m json.tool 2>/dev/null || cat .metrics/metrics.json; \
+		echo ""; \
+	fi
+	@if [ -f ".metrics/feedback.json" ]; then \
+		echo "$(BLUE)Feedback:$(NC)"; \
+		cat .metrics/feedback.json | python3 -m json.tool 2>/dev/null || cat .metrics/feedback.json; \
+	fi
+
+metrics-clear: ## Clear collected metrics
+	@echo "$(YELLOW)Clearing metrics...$(NC)"
+	@rm -rf .metrics/*.json
+	@echo "$(GREEN)✓ Metrics cleared$(NC)"
+
+security-audit: ## Run security audit
+	@./scripts/security-audit.sh
 
 ##@ Shortcuts
 

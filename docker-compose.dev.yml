@@ -1,0 +1,35 @@
+# Development Profile - Hot reload, debug logging, sample data
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-wander_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-wander_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password_change_in_prod}
+    labels:
+      - "com.wander.environment=development"
+      - "com.wander.profile=dev"
+
+  redis:
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev_redis_password}
+    labels:
+      - "com.wander.environment=development"
+      - "com.wander.profile=dev"
+
+  backend:
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    labels:
+      - "com.wander.environment=development"
+      - "com.wander.profile=dev"
+
+  frontend:
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+    labels:
+      - "com.wander.environment=development"
+      - "com.wander.profile=dev"
+

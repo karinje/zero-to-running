@@ -1,0 +1,44 @@
+job_families:
+  full-stack:
+    components:
+      - postgres
+      - redis
+      - backend
+      - frontend
+    description: "Full-stack web development with all services"
+  
+  backend-engineer:
+    components:
+      - postgres
+      - redis
+      - backend
+    description: "Backend API development"
+  
+  frontend-engineer:
+    components:
+      - frontend
+      - backend
+    description: "Frontend development with API access"
+  
+  ml-engineer:
+    components:
+      - postgres
+      - redis
+      - jupyter
+      - python
+    description: "Machine learning and data science"
+  
+  data-engineer:
+    components:
+      - postgres
+      - redis
+      - jupyter
+    description: "Data engineering and ETL"
+  
+  api-developer:
+    components:
+      - postgres
+      - redis
+      - backend
+    description: "REST/GraphQL API development"
+

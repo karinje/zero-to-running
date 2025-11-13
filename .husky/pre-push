@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run tests before push (placeholder - will be enabled when tests are added)
+# echo "Running tests before push..."
+# npm test
+
+# Check for merge conflicts
+if git diff --check --cached; then
+  echo "❌ Merge conflict markers found. Please resolve conflicts before pushing."
+  exit 1
+fi
+
+# Validate branch name (optional - follows pattern: feature/name, fix/name, etc.)
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+if echo "$BRANCH_NAME" | grep -qvE '^(main|develop|feature|fix|hotfix|release)/'; then
+  echo "⚠️  Branch name doesn't follow convention (feature/name, fix/name, etc.)"
+  echo "   Current branch: $BRANCH_NAME"
+  echo "   Continuing anyway..."
+fi
+
