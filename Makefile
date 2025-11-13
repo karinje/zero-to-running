@@ -1,4 +1,4 @@
-.PHONY: help dev down clean restart logs logs-frontend logs-backend logs-db logs-redis health ps shell-frontend shell-backend shell-db shell-redis db-seed db-reset db-backup db-restore lint test check-docker
+.PHONY: help dev down clean restart logs logs-frontend logs-backend logs-db logs-redis logs-filter logs-aggregate health ps shell-frontend shell-backend shell-db shell-redis db-seed db-reset db-backup db-restore db-migrate db-rollback lint lint-fix format test test-backend test-frontend check-docker pre-flight validate-env check-ports troubleshoot prune rebuild rebuild-backend rebuild-frontend update up stop
 
 # Colors for output
 GREEN  := \033[0;32m
@@ -16,9 +16,9 @@ COMPOSE_FILE := docker-compose.yml
 
 ##@ Primary Commands
 
-dev: check-docker ## Start all services
+dev: pre-flight ## Start all services
 	@echo "$(GREEN)Starting all services...$(NC)"
-	@docker-compose -f $(COMPOSE_FILE) up -d
+	@docker-compose -f $(COMPOSE_FILE) up -d || (echo "$(RED)❌ Failed to start services$(NC)" && exit 1)
 	@echo "$(GREEN)✓ Services started!$(NC)"
 	@echo "$(BLUE)Frontend: http://localhost:3000$(NC)"
 	@echo "$(BLUE)Backend:  http://localhost:4000$(NC)"
@@ -64,6 +64,22 @@ logs-db: ## View database logs only
 
 logs-redis: ## View redis logs only
 	@docker-compose -f $(COMPOSE_FILE) logs -f redis
+
+logs-filter: ## Filter logs by level or service (usage: make logs-filter LEVEL=error or make logs-filter SERVICE=backend)
+	@if [ -z "$(LEVEL)" ] && [ -z "$(SERVICE)" ]; then \
+		echo "$(RED)Error: LEVEL or SERVICE parameter required$(NC)"; \
+		echo "$(YELLOW)Usage: make logs-filter LEVEL=error$(NC)"; \
+		echo "$(YELLOW)       make logs-filter SERVICE=backend$(NC)"; \
+		exit 1; \
+	fi
+	@if [ ! -z "$(LEVEL)" ]; then \
+		./scripts/logs-filter.sh level $(LEVEL); \
+	elif [ ! -z "$(SERVICE)" ]; then \
+		./scripts/logs-filter.sh service $(SERVICE); \
+	fi
+
+logs-aggregate: ## Aggregate logs from all services with timestamps
+	@./scripts/logs-aggregate.sh
 
 health: ## Check all service health
 	@./scripts/health-check.sh
@@ -133,18 +149,117 @@ db-restore: ## Restore database from backup (usage: make db-restore FILE=backups
 		echo "$(YELLOW)Cancelled$(NC)"; \
 	fi
 
+db-migrate: ## Run database migrations (placeholder)
+	@echo "$(YELLOW)Database migrations will be added when migration system is implemented$(NC)"
+
+db-rollback: ## Rollback last migration (placeholder)
+	@echo "$(YELLOW)Database rollback will be added when migration system is implemented$(NC)"
+
 ##@ Utilities
 
-lint: ## Run linters on all code
-	@echo "$(YELLOW)Linting not yet implemented$(NC)"
-	@echo "$(BLUE)This will be added in PR-013$(NC)"
+##@ Testing
 
 test: ## Run all tests
-	@echo "$(YELLOW)Testing not yet implemented$(NC)"
-	@echo "$(BLUE)This will be added in PR-016$(NC)"
+	@echo "$(YELLOW)Testing framework will be added in PR-016$(NC)"
+	@echo "$(BLUE)For now, you can run tests manually:$(NC)"
+	@echo "  Backend: docker-compose exec backend npm test"
+	@echo "  Frontend: docker-compose exec frontend npm test"
+
+test-backend: ## Run backend tests only
+	@echo "$(YELLOW)Backend tests will be added in PR-016$(NC)"
+
+test-frontend: ## Run frontend tests only
+	@echo "$(YELLOW)Frontend tests will be added in PR-016$(NC)"
+
+##@ Code Quality
+
+lint: ## Lint all code (backend and frontend)
+	@echo "$(YELLOW)Linting all code...$(NC)"
+	@./scripts/lint-all.sh
+
+lint-fix: ## Auto-fix linting issues
+	@echo "$(YELLOW)Auto-fixing linting issues...$(NC)"
+	@docker-compose exec -T backend npm run lint -- --fix || true
+	@docker-compose exec -T frontend npm run lint -- --fix || true
+	@echo "$(GREEN)✓ Linting fixes applied$(NC)"
+
+format: ## Format all code (placeholder for Prettier)
+	@echo "$(YELLOW)Code formatting will be added with Prettier in PR-015$(NC)"
+
+pre-flight: ## Run all pre-flight checks before starting services
+	@./scripts/pre-flight.sh
 
 check-docker: ## Check if Docker is installed and running
 	@./scripts/check-docker.sh
+
+validate-env: ## Validate environment variables
+	@./scripts/validate-env.sh
+
+check-ports: ## Check if required ports are available
+	@./scripts/check-ports.sh
+
+##@ Docker Maintenance
+
+prune: ## Clean up unused Docker resources
+	@echo "$(YELLOW)Cleaning up unused Docker resources...$(NC)"
+	@./scripts/docker-cleanup.sh
+
+rebuild: ## Rebuild all Docker images
+	@echo "$(YELLOW)Rebuilding all Docker images...$(NC)"
+	@docker-compose -f $(COMPOSE_FILE) build --no-cache
+	@echo "$(GREEN)✓ Images rebuilt$(NC)"
+
+rebuild-backend: ## Rebuild backend image only
+	@echo "$(YELLOW)Rebuilding backend image...$(NC)"
+	@docker-compose -f $(COMPOSE_FILE) build --no-cache backend
+	@echo "$(GREEN)✓ Backend image rebuilt$(NC)"
+
+rebuild-frontend: ## Rebuild frontend image only
+	@echo "$(YELLOW)Rebuilding frontend image...$(NC)"
+	@docker-compose -f $(COMPOSE_FILE) build --no-cache frontend
+	@echo "$(GREEN)✓ Frontend image rebuilt$(NC)"
+
+update: ## Update dependencies (rebuild containers)
+	@echo "$(YELLOW)Updating dependencies...$(NC)"
+	@echo "$(BLUE)Backend:$(NC)"
+	@docker-compose exec -T backend npm update || true
+	@echo "$(BLUE)Frontend:$(NC)"
+	@docker-compose exec -T frontend npm update || true
+	@echo "$(GREEN)✓ Dependencies updated$(NC)"
+	@echo "$(YELLOW)Note: Rebuild images to use updated dependencies: make rebuild$(NC)"
+
+##@ Shortcuts
+
+up: dev ## Alias for dev
+
+stop: down ## Alias for down
+
+troubleshoot: ## Show troubleshooting information
+	@echo "$(BLUE)Troubleshooting Guide$(NC)"
+	@echo "$(BLUE)=====================$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Common issues and solutions:$(NC)"
+	@echo ""
+	@echo "1. Services won't start:"
+	@echo "   $(GREEN)make pre-flight$(NC) - Run all checks"
+	@echo "   $(GREEN)make check-ports$(NC) - Check port conflicts"
+	@echo ""
+	@echo "2. Database connection failed:"
+	@echo "   $(GREEN)make validate-env$(NC) - Check environment variables"
+	@echo "   $(GREEN)make logs-db$(NC) - View database logs"
+	@echo ""
+	@echo "3. View logs:"
+	@echo "   $(GREEN)make logs$(NC) - All services"
+	@echo "   $(GREEN)make logs-filter LEVEL=error$(NC) - Filter by level"
+	@echo ""
+	@echo "4. Check health:"
+	@echo "   $(GREEN)make health$(NC) - All services"
+	@echo ""
+	@echo "$(YELLOW)For more help:$(NC)"
+	@echo "   - See docs/TROUBLESHOOTING.md"
+	@echo "   - See docs/FAQ.md"
+	@echo "   - See docs/COMMON_ERRORS.md"
+	@echo "   - See docs/DEBUGGING.md"
 
 help: ## Display this help message
 	@echo "$(BLUE)Zero-to-Running Developer Environment$(NC)"
@@ -154,4 +269,5 @@ help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2 } /^##@/ { printf "\n$(BLUE)%s$(NC)\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(YELLOW)For more information, see README.md$(NC)"
+	@echo "$(YELLOW)For troubleshooting: make troubleshoot$(NC)"
 

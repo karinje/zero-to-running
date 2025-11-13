@@ -97,12 +97,13 @@ For a complete list of commands, run `make help`.
 
 ## 📚 Documentation
 
-- [Database Guide](docs/DATABASE.md) - PostgreSQL connection and usage
-- [Redis Guide](docs/REDIS.md) - Redis cache connection and usage
-- [Backend API](docs/BACKEND_API.md) - Backend API documentation
-- [Frontend Guide](docs/FRONTEND.md) - Frontend development guide
-- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
-- [API Documentation](docs/API.md) - Backend API reference
+- [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [FAQ](docs/FAQ.md) - Frequently asked questions
+- [Common Errors](docs/COMMON_ERRORS.md) - Quick error reference
+- [Debugging Guide](docs/DEBUGGING.md) - Debugging techniques
+- [Logging Guide](docs/LOGGING.md) - Logging system documentation
+- [Advanced Usage](docs/ADVANCED_USAGE.md) - Advanced commands and features
+- [Install Docker](docs/INSTALL_DOCKER.md) - Docker installation guide
 
 ## 🎯 Key Features
 

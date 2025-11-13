@@ -3,11 +3,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const { validateEnv, env } = require('./config/env');
-const requestLogger = require('./middleware/logger');
+const requestLogger = require('./middleware/requestLogger');
 const errorHandler = require('./middleware/errorHandler');
 const indexRoutes = require('./routes/index');
 const healthRoutes = require('./routes/health');
-const logger = require('./utils/logger');
+const logger = require('./config/logger');
 
 // Validate environment variables
 validateEnv();
@@ -56,23 +56,26 @@ app.use(errorHandler);
 // Start server
 const PORT = env.server.port;
 app.listen(PORT, '0.0.0.0', () => {
-  logger.info('🚀 Backend server starting...');
-  logger.info(`   Environment: ${env.server.nodeEnv}`);
-  logger.info(`   Port: ${PORT}`);
-  logger.info(`   API Version: ${env.server.apiVersion}`);
-  logger.info(`   CORS Origin: ${env.server.corsOrigin}`);
-  logger.info(`\n✅ Server running at http://0.0.0.0:${PORT}`);
-  logger.info(`   Health check: http://0.0.0.0:${PORT}/health`);
+  const serverLogger = logger.child({ service: 'backend' });
+  serverLogger.info('🚀 Backend server starting...', {
+    environment: env.server.nodeEnv,
+    port: PORT,
+    apiVersion: env.server.apiVersion,
+    corsOrigin: env.server.corsOrigin,
+  });
+  serverLogger.info(`✅ Server running at http://0.0.0.0:${PORT}`);
+  serverLogger.info(`   Health check: http://0.0.0.0:${PORT}/health`);
 });
 
 // Graceful shutdown
+const serverLogger = logger.child({ service: 'backend' });
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully...');
+  serverLogger.info('SIGTERM received, shutting down gracefully...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully...');
+  serverLogger.info('SIGINT received, shutting down gracefully...');
   process.exit(0);
 });
 

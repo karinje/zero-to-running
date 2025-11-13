@@ -1,6 +1,6 @@
 const { createClient } = require('redis');
 const { env } = require('./env');
-const logger = require('../utils/logger');
+const logger = require('./logger');
 
 let client = null;
 
@@ -17,23 +17,30 @@ function getRedisClient() {
     password: env.redis.password,
   });
 
+  const redisLogger = logger.child({ service: 'redis' });
   client.on('error', (err) => {
-    logger.error('Redis Client Error:', err);
+    redisLogger.error('Redis Client Error', {
+      error: err.message,
+      stack: err.stack,
+    });
   });
 
   client.on('connect', () => {
-    logger.info('🔄 Redis connecting...');
+    redisLogger.info('Redis connecting...');
   });
 
   client.on('ready', () => {
-    logger.info('✅ Redis connection established');
-    logger.info(`   Redis: ${env.redis.host}:${env.redis.port}`);
+    redisLogger.info('Redis connection established', {
+      host: env.redis.host,
+      port: env.redis.port,
+    });
   });
 
   return client;
 }
 
 async function connect() {
+  const redisLogger = logger.child({ service: 'redis' });
   try {
     const redisClient = getRedisClient();
     if (!redisClient.isOpen) {
@@ -41,19 +48,26 @@ async function connect() {
     }
     return redisClient;
   } catch (error) {
-    logger.error('❌ Redis connection failed:', error.message);
+    redisLogger.error('Redis connection failed', {
+      error: error.message,
+      stack: error.stack,
+    });
     throw error;
   }
 }
 
 async function testConnection() {
+  const redisLogger = logger.child({ service: 'redis' });
   try {
     const redisClient = await connect();
     await redisClient.ping();
-    logger.info('✅ Redis connection test successful');
+    redisLogger.info('Redis connection test successful');
     return true;
   } catch (error) {
-    logger.error('❌ Redis connection test failed:', error.message);
+    redisLogger.error('Redis connection test failed', {
+      error: error.message,
+      stack: error.stack,
+    });
     return false;
   }
 }
