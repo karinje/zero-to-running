@@ -21,6 +21,12 @@ docker ps
 clear
 ```
 
+**Docker Desktop:** 
+- Not required to show, but helpful for visual learners
+- If showing: Open Docker Desktop in background, minimize it
+- You can pull it up when services start to show real-time container status
+- Useful at the end to show clean teardown (watch containers disappear)
+
 ---
 
 ## Demo Flow
@@ -34,7 +40,37 @@ clear
 > - Debug cryptic errors without context
 > - Waste senior engineer time for help
 > 
-> Today I'll show you how we reduced this to under 10 minutes with zero manual configuration."
+> Today I'll show you how we reduced this to under 10 minutes with zero manual configuration.
+> 
+> **Why Docker vs Other Approaches?**
+> 
+> We evaluated several options:
+> 
+> **Manual Installation** (Homebrew, apt-get):
+> - ❌ Version conflicts: One project needs PostgreSQL 14, another needs 15
+> - ❌ 'Works on my machine' syndrome - everyone has slightly different configs
+> - ❌ No easy cleanup - services pollute your machine
+> 
+> **Virtual Machines** (VirtualBox, VMware):
+> - ❌ Heavy resource usage (4-8GB RAM per VM)
+> - ❌ Slow startup (5-10 minutes)
+> - ❌ Complex networking setup
+> 
+> **Version Managers** (nvm, pyenv, rbenv):
+> - ❌ Only solves language versions, not databases/services
+> - ❌ Still manual setup for PostgreSQL, Redis, etc.
+> - ❌ No guarantee of consistency across team
+> 
+> **Docker Compose** (our choice):
+> - ✅ Version consistency: Everyone runs exact same PostgreSQL 15.2, Redis 7.0.5
+> - ✅ Lightweight: Services share host resources efficiently
+> - ✅ Fast startup: 1-2 minutes for full stack
+> - ✅ Complete isolation: Multiple projects, zero conflicts
+> - ✅ Production parity: Same containers from dev to prod
+> - ✅ Clean teardown: `make clean` removes everything
+> - ✅ Cross-platform: Works on Mac, Linux, Windows (WSL2)
+> 
+> This gives us the **best of all worlds**: speed, consistency, and simplicity."
 
 ---
 
@@ -46,20 +82,17 @@ clear
 **DO:**
 
 ```bash
-# 1. Show we're starting from scratch
-pwd
-ls -la  # Show clean directory
+# 1. Clone the repository
+git clone https://github.com/YOUR_ORG/zero-to-running.git
+cd zero-to-running
 
-# 2. Clone the repo (or cd into it)
-cd ~/git/zero-to-running
-
-# 3. Show the simplicity
+# 2. Show the simplicity
 cat README.md | head -30  # Show Quick Start section
 
-# 4. Copy environment config
+# 3. Copy environment config
 cp .env.example .env
 
-# 5. Show job family options FIRST
+# 4. Show job family options FIRST
 make list-families
 ```
 
@@ -81,12 +114,14 @@ make dev JOB_FAMILY=full-stack
 **SAY (while services start):**
 > "Watch what happens:
 > - Pre-flight checks verify Docker is running and ports are available
-> - PostgreSQL 15.2 starts with health checks
-> - Redis 7.0.5 starts with persistence configured
+> - PostgreSQL 15.2 starts with health checks and persistence
+> - Redis 7.0.5 starts with health checks and persistence
 > - Backend API starts and waits for database to be healthy
 > - Frontend starts last
 > 
-> All service dependencies are handled automatically. No manual steps."
+> All service dependencies are handled automatically. No manual steps.
+> 
+> *[OPTIONAL: Open Docker Desktop to show containers starting in real-time - visual learners appreciate this]*"
 
 **WAIT:** Let services start (should be 1-2 minutes)
 
@@ -229,42 +264,102 @@ make db-seed
 **DO:**
 
 ```bash
-# 7. Access database directly
+# 7. Access database directly to verify seeding worked
 make shell-db
-# Inside psql:
-# \dt
-# SELECT COUNT(*) FROM users;
-# SELECT COUNT(*) FROM products;
-# \q
+# Inside psql, run:
+# \dt                          # List all tables
+# SELECT COUNT(*) FROM users;  # Should show ~12
+# SELECT COUNT(*) FROM products; # Should show ~25
+# SELECT * FROM users LIMIT 3; # Show sample data
+# \q                           # Exit psql
 ```
 
 **SAY:**
-> "Developers can jump into any container to debug."
+> "I just jumped inside the PostgreSQL container to query the database directly. 
+> This is powerful for debugging - you can access any container's shell:
+> - `make shell-backend` for Node.js debugging
+> - `make shell-frontend` for frontend inspection
+> - `make shell-redis` for Redis CLI
+> 
+> No SSH, no port forwarding, no configuration. Just instant access."
 
 ---
 
 ### Part 5: Advanced Features (2 minutes)
 
 **SAY:**
-> "Let me quickly show some advanced features."
+> "Let me show you environment profiles. This is a common pattern in real projects.
+> 
+> Why profiles? Because you want to test your code with different configurations BEFORE pushing to real staging or production.
+> 
+> **Right now, we mainly change:**
+> - Logging levels (debug → info → error)
+> - Hot reload settings
+> - Environment mode
+> 
+> **But in real projects, profiles control:**
+> - Payment gateways: Mock → Stripe Sandbox → Stripe Production
+> - File storage: Local files → Test S3 bucket → Production S3
+> - Email service: Console logs → Mailgun test → Mailgun production
+> - Authentication: Disabled → Basic → OAuth
+> - External APIs: Mocked → Sandbox → Production endpoints
+> 
+> This lets you test production-like behavior locally without touching real services.
+> All profiles still run LOCALLY with local containers."
 
 **DO:**
 
 ```bash
-# 1. Environment profiles
-make profile-status
-make dev-staging  # Show staging profile option
-make down
-make dev  # Back to dev
+# 1. Show we have 3 profiles
+ls -1 docker-compose.*.yml
 ```
 
 **SAY:**
-> "We have dev, staging, and production-local profiles. Different logging levels, different configs."
+> "Three profiles: dev, staging, and prod-local. Let me show the differences."
 
 **DO:**
 
 ```bash
-# 2. Show all commands
+# 2. Show dev profile (what we're running now)
+echo "=== Currently Running: DEV Profile ==="
+head -2 docker-compose.dev.yml
+grep "LOG_LEVEL\|NODE_ENV" docker-compose.dev.yml | head -2
+```
+
+**SAY:**
+> "Dev profile: debug logging, hot reload, development mode. This is for daily coding."
+
+**DO:**
+
+```bash
+# 3. Show staging profile differences
+echo ""
+echo "=== STAGING Profile (production-like testing) ==="
+head -2 docker-compose.staging.yml
+grep "LOG_LEVEL\|NODE_ENV" docker-compose.staging.yml | head -2
+```
+
+**SAY:**
+> "Staging profile: info logging, more like production. Test here before pushing to real staging.
+> 
+> **To switch profiles:**
+> - `make dev-staging` - Local environment with staging configs
+> - `make dev-prod` - Local environment with production configs
+> 
+> **Real-world example:**
+> Your code uses Stripe payments. In dev profile, you'd use mock payments.
+> Switch to staging profile - now it uses Stripe's test API with test credit cards.
+> Switch to prod profile - uses Stripe's production API (but still hitting your LOCAL backend).
+> 
+> This way you can test the exact production configuration without risking real transactions.
+> Then deploy to actual production servers when you're confident.
+> 
+> This is standard in the industry - AWS, Google Cloud, all support this pattern."
+
+**DO:**
+
+```bash
+# 4. Show all commands available
 make help | head -40
 ```
 
@@ -274,15 +369,13 @@ make help | head -40
 **DO:**
 
 ```bash
-# 3. Show testing
-make test-backend  # This will run backend tests
-
-# 4. Show security
+# 5. Show security scanning
 make security-audit
 ```
 
 **SAY:**
-> "Automated testing and security scanning built in. Pre-commit hooks run linting and formatting automatically."
+> "Security scanning built in - checks for secrets, dependency vulnerabilities.
+> Pre-commit hooks also run linting and formatting automatically before every commit."
 
 ---
 

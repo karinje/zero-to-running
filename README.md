@@ -78,6 +78,107 @@ Then use it: `make dev JOB_FAMILY=your-custom-setup`
 - **20GB free disk space**
 - **Internet connection** (for first-time image downloads)
 
+## 🏗️ Architecture & Why Docker?
+
+### Traditional Setup vs. Docker Approach
+
+```mermaid
+graph TD
+    subgraph "❌ Traditional Manual Setup"
+        A1[New Developer] --> B1[Install PostgreSQL]
+        B1 --> C1[Install Redis]
+        C1 --> D1[Install Node.js]
+        D1 --> E1[Configure Services]
+        E1 --> F1[Debug Conflicts]
+        F1 --> G1{Works?}
+        G1 -->|No| F1
+        G1 -->|Yes| H1[Start Coding]
+        
+        style A1 fill:#ff6b6b
+        style F1 fill:#ff6b6b
+        style G1 fill:#ff6b6b
+        style H1 fill:#51cf66
+    end
+    
+    subgraph "✅ Zero-to-Running Docker Setup"
+        A2[New Developer] --> B2[git clone]
+        B2 --> C2[cp .env.example .env]
+        C2 --> D2[make dev]
+        D2 --> E2[Start Coding]
+        
+        style A2 fill:#51cf66
+        style B2 fill:#51cf66
+        style C2 fill:#51cf66
+        style D2 fill:#51cf66
+        style E2 fill:#51cf66
+    end
+```
+
+**Time Comparison:**
+- **Traditional**: 2-3 days (plus debugging time)
+- **Zero-to-Running**: Under 10 minutes
+
+### Service Architecture
+
+```mermaid
+graph LR
+    subgraph "Your Machine"
+        DEV[Developer<br/>You write code]
+        
+        subgraph "Docker Containers"
+            FE[Frontend<br/>React + Vite<br/>:3000]
+            BE[Backend<br/>Node.js API<br/>:4000]
+            DB[(PostgreSQL<br/>Database<br/>:5432)]
+            CACHE[(Redis<br/>Cache<br/>:6379)]
+        end
+    end
+    
+    DEV -->|Edit code| FE
+    DEV -->|Edit code| BE
+    DEV -->|Direct access| DB
+    DEV -->|Direct access| CACHE
+    
+    FE -->|API calls| BE
+    BE -->|Queries| DB
+    BE -->|Cache| CACHE
+    
+    style DEV fill:#339af0
+    style FE fill:#51cf66
+    style BE fill:#51cf66
+    style DB fill:#fd7e14
+    style CACHE fill:#fd7e14
+```
+
+### Key Benefits
+
+```mermaid
+graph TD
+    A[Zero-to-Running] --> B[Version Consistency]
+    A --> C[Complete Isolation]
+    A --> D[Production Parity]
+    A --> E[Clean Teardown]
+    
+    B --> B1[Everyone runs<br/>PostgreSQL 15.2<br/>Redis 7.0.5<br/>Node 18.12]
+    C --> C1[Multiple projects<br/>Zero conflicts<br/>No port collisions]
+    D --> D1[Same containers<br/>Dev → Staging → Prod]
+    E --> E1[make clean removes<br/>everything<br/>No residue]
+    
+    style A fill:#339af0
+    style B fill:#51cf66
+    style C fill:#51cf66
+    style D fill:#51cf66
+    style E fill:#51cf66
+```
+
+**Why Docker Wins:**
+
+| Approach | Version Control | Resource Usage | Startup Time | Isolation | Production Parity |
+|----------|----------------|----------------|--------------|-----------|------------------|
+| **Manual Install** | ❌ Inconsistent | ✅ Light | ⚠️ Varies | ❌ None | ❌ Poor |
+| **Virtual Machines** | ✅ Good | ❌ Heavy (4-8GB) | ❌ 5-10 min | ✅ Complete | ⚠️ Moderate |
+| **Version Managers** | ⚠️ Languages only | ✅ Light | ✅ Fast | ❌ Partial | ❌ Poor |
+| **Docker (Our Choice)** | ✅ Perfect | ✅ Light | ✅ 1-2 min | ✅ Complete | ✅ Identical |
+
 ## 💡 Day-to-Day Commands
 
 ### Starting & Stopping
