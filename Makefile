@@ -89,8 +89,9 @@ shell-redis: ## Access redis-cli
 ##@ Database
 
 db-seed: ## Seed database with sample data
-	@echo "$(YELLOW)Database seeding not yet implemented$(NC)"
-	@echo "$(BLUE)This will be added in PR-009$(NC)"
+	@echo "$(YELLOW)Seeding database with sample data...$(NC)"
+	@docker-compose -f $(COMPOSE_FILE) exec -T backend npm run seed
+	@echo "$(GREEN)✓ Database seeded successfully$(NC)"
 
 db-reset: ## Drop and recreate database
 	@echo "$(RED)⚠ This will drop and recreate the database!$(NC)"

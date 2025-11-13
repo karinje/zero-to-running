@@ -1,0 +1,28 @@
+[
+  {"name": "Laptop Pro 15", "price": 1299.99, "description": "High-performance laptop for professionals"},
+  {"name": "Wireless Mouse", "price": 29.99, "description": "Ergonomic wireless mouse"},
+  {"name": "Mechanical Keyboard", "price": 149.99, "description": "RGB mechanical keyboard"},
+  {"name": "4K Monitor", "price": 399.99, "description": "27-inch 4K display"},
+  {"name": "USB-C Hub", "price": 49.99, "description": "7-in-1 USB-C hub"},
+  {"name": "Webcam HD", "price": 79.99, "description": "1080p webcam with microphone"},
+  {"name": "Noise Cancelling Headphones", "price": 299.99, "description": "Premium wireless headphones"},
+  {"name": "Standing Desk", "price": 599.99, "description": "Adjustable height standing desk"},
+  {"name": "Desk Lamp", "price": 39.99, "description": "LED desk lamp with dimmer"},
+  {"name": "Laptop Stand", "price": 59.99, "description": "Aluminum laptop stand"},
+  {"name": "External SSD 1TB", "price": 129.99, "description": "Fast external storage"},
+  {"name": "Docking Station", "price": 199.99, "description": "Thunderbolt 3 docking station"},
+  {"name": "Monitor Arm", "price": 89.99, "description": "Dual monitor arm mount"},
+  {"name": "Cable Management", "price": 19.99, "description": "Cable organizer kit"},
+  {"name": "Desk Mat", "price": 24.99, "description": "Large desk pad"},
+  {"name": "Phone Stand", "price": 14.99, "description": "Adjustable phone stand"},
+  {"name": "Tablet Stand", "price": 34.99, "description": "Universal tablet holder"},
+  {"name": "Blue Light Glasses", "price": 49.99, "description": "Computer glasses"},
+  {"name": "Wrist Rest", "price": 12.99, "description": "Ergonomic wrist support"},
+  {"name": "Foot Rest", "price": 29.99, "description": "Adjustable foot rest"},
+  {"name": "Desk Organizer", "price": 19.99, "description": "Desktop storage organizer"},
+  {"name": "Power Strip", "price": 24.99, "description": "Surge protector with USB"},
+  {"name": "Laptop Sleeve", "price": 34.99, "description": "Protective laptop case"},
+  {"name": "Mouse Pad", "price": 9.99, "description": "Large gaming mouse pad"},
+  {"name": "Screen Cleaner", "price": 7.99, "description": "Screen cleaning kit"}
+]
+

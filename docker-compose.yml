@@ -17,9 +17,25 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
     restart: unless-stopped
     networks:
       - wander-network
+    labels:
+      - "com.wander.service=postgres"
+      - "com.wander.environment=development"
+    deploy:
+      resources:
+        limits:
+          memory: ${POSTGRES_MEMORY_LIMIT:-512m}
+          cpus: '0.5'
+        reservations:
+          memory: ${POSTGRES_MEMORY_LIMIT:-512m}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7.0.5-alpine
@@ -37,9 +53,25 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 5s
     restart: unless-stopped
     networks:
       - wander-network
+    labels:
+      - "com.wander.service=redis"
+      - "com.wander.environment=development"
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIS_MEMORY_LIMIT:-256m}
+          cpus: '0.25'
+        reservations:
+          memory: ${REDIS_MEMORY_LIMIT:-256m}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     build:
@@ -73,6 +105,21 @@ services:
     restart: unless-stopped
     networks:
       - wander-network
+    labels:
+      - "com.wander.service=backend"
+      - "com.wander.environment=development"
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-512m}
+          cpus: '0.5'
+        reservations:
+          memory: ${BACKEND_MEMORY_LIMIT:-512m}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -96,6 +143,21 @@ services:
     restart: unless-stopped
     networks:
       - wander-network
+    labels:
+      - "com.wander.service=frontend"
+      - "com.wander.environment=development"
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-256m}
+          cpus: '0.25'
+        reservations:
+          memory: ${FRONTEND_MEMORY_LIMIT:-256m}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
