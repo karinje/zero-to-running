@@ -61,6 +61,7 @@ make help         # Show all available commands
 - [Architecture Overview](docs/ARCHITECTURE.md) - System design and components
 - [Database Guide](docs/DATABASE.md) - PostgreSQL connection and usage
 - [Redis Guide](docs/REDIS.md) - Redis cache connection and usage
+- [Backend API](docs/BACKEND_API.md) - Backend API documentation
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
 - [API Documentation](docs/API.md) - Backend API reference
 

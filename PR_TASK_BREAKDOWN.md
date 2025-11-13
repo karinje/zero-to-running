@@ -155,16 +155,16 @@ REDIS_PASSWORD=dev_redis_password
 Create Node.js/Express backend service with database and redis connections, health check endpoint, and hot reload for development.
 
 #### Tasks
-- [ ] Initialize Node.js project with package.json
-- [ ] Create Express server with basic routing
-- [ ] Set up database connection pool (PostgreSQL)
-- [ ] Set up redis client connection
-- [ ] Implement /health endpoint with service checks
-- [ ] Create Dockerfile for backend
-- [ ] Add backend service to docker-compose.yml
-- [ ] Configure nodemon for hot reload
-- [ ] Add environment variable validation
-- [ ] Create sample API endpoints
+- [x] Initialize Node.js project with package.json
+- [x] Create Express server with basic routing
+- [x] Set up database connection pool (PostgreSQL)
+- [x] Set up redis client connection
+- [x] Implement /health endpoint with service checks
+- [x] Create Dockerfile for backend
+- [x] Add backend service to docker-compose.yml
+- [x] Configure nodemon for hot reload
+- [x] Add environment variable validation
+- [x] Create sample API endpoints
 
 #### Files Created
 ```
@@ -228,14 +228,14 @@ CORS_ORIGIN=http://localhost:3000
 ```
 
 #### Acceptance Criteria
-- [ ] Backend container starts and connects to postgres
-- [ ] Backend connects to redis successfully
-- [ ] /health endpoint returns 200 with service statuses
-- [ ] Hot reload works when editing src files
-- [ ] Environment variables load correctly
-- [ ] CORS configured for frontend
-- [ ] Error handling middleware catches errors
-- [ ] Logs output to console with timestamps
+- [x] Backend container starts and connects to postgres
+- [x] Backend connects to redis successfully
+- [x] /health endpoint returns 200 with service statuses
+- [x] Hot reload works when editing src files
+- [x] Environment variables load correctly
+- [x] CORS configured for frontend
+- [x] Error handling middleware catches errors
+- [x] Logs output to console with timestamps
 
 ---
 
