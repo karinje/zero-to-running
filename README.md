@@ -7,6 +7,103 @@
 
 A Docker-based development environment that gets you from zero to a fully running multi-service application stack in under 10 minutes. No manual configuration, no version conflicts, no "works on my machine" problems.
 
+---
+
+## ❌ The Problem
+
+Traditional developer environment setup is painful:
+
+- **2-3 days** wasted installing PostgreSQL, Redis, Node.js with the right versions
+- **Version conflicts**: One project needs PostgreSQL 14, another needs 15
+- **"Works on my machine"** syndrome - everyone has slightly different configs  
+- **Port collisions** and cryptic errors without context
+- **No easy cleanup** - services pollute your machine
+- **Senior engineer time wasted** helping with setup issues
+
+**Result:** New developers spend their first week fighting infrastructure instead of coding.
+
+---
+
+## ✅ Our Solution: Docker-Based Zero-to-Running
+
+**Time to productivity: Under 10 minutes**
+
+| Approach | Version Control | Resource Usage | Startup Time | Isolation | Production Parity |
+|----------|----------------|----------------|--------------|-----------|------------------|
+| **Manual Install** | ❌ Inconsistent | ✅ Light | ⚠️ Varies | ❌ None | ❌ Poor |
+| **Virtual Machines** | ✅ Good | ❌ Heavy (4-8GB) | ❌ 5-10 min | ✅ Complete | ⚠️ Moderate |
+| **Version Managers** | ⚠️ Languages only | ✅ Light | ✅ Fast | ❌ Partial | ❌ Poor |
+| **🎯 Docker (Our Choice)** | ✅ Perfect | ✅ Light | ✅ 1-2 min | ✅ Complete | ✅ Identical |
+
+**Key Benefits:**
+- ✅ **Version Consistency**: Everyone runs exact same PostgreSQL 15.2, Redis 7.0.5, Node 18.12
+- ✅ **Complete Isolation**: Multiple projects, zero conflicts, no port collisions
+- ✅ **Production Parity**: Same containers from dev → staging → prod
+- ✅ **Clean Teardown**: `make clean` removes everything, no residue
+- ✅ **Cross-Platform**: Works on Mac, Linux, Windows (WSL2)
+
+---
+
+## 🏗️ How It Works
+
+### Service Architecture
+
+The diagram below shows how all services run in isolated Docker containers on your machine. You edit code locally with hot reload, while services communicate seamlessly:
+
+```mermaid
+graph LR
+    subgraph "Your Machine"
+        DEV[Developer<br/>You write code]
+        
+        subgraph "Docker Containers"
+            FE[Frontend<br/>React + Vite<br/>:3000]
+            BE[Backend<br/>Node.js API<br/>:4000]
+            DB[(PostgreSQL<br/>Database<br/>:5432)]
+            CACHE[(Redis<br/>Cache<br/>:6379)]
+        end
+    end
+    
+    DEV -->|Edit code<br/>Hot reload| FE
+    DEV -->|Edit code<br/>Hot reload| BE
+    DEV -->|Direct access<br/>for debugging| DB
+    DEV -->|Direct access<br/>for debugging| CACHE
+    
+    FE -->|API calls| BE
+    BE -->|Queries| DB
+    BE -->|Cache| CACHE
+    
+    style DEV fill:#339af0
+    style FE fill:#51cf66
+    style BE fill:#51cf66
+    style DB fill:#fd7e14
+    style CACHE fill:#fd7e14
+```
+
+**How to read this diagram:**
+- **Blue (Developer)**: That's you! You edit Frontend and Backend code directly on your machine
+- **Green (App Services)**: Frontend and Backend run in containers with hot reload - changes appear instantly
+- **Orange (Data Services)**: PostgreSQL and Redis run in containers with persistent data volumes
+- **Arrows**: Show how services communicate (Frontend → Backend → Database/Cache)
+- **Ports**: All services accessible on localhost (3000, 4000, 5432, 6379)
+
+**What makes this powerful:**
+1. Edit code in your IDE → Changes auto-reload in containers (1-2 seconds)
+2. Need to debug database? `make shell-db` gives you instant PostgreSQL access
+3. Working on a different project? No conflicts - each project has isolated containers
+4. Done for the day? `make down` stops everything cleanly
+
+---
+
+## 📋 Prerequisites
+
+- **Docker Desktop** 24.0+ installed and running
+- **Git** installed
+- **8GB RAM** minimum (16GB recommended)
+- **20GB free disk space**
+- **Internet connection** (for first-time image downloads)
+
+---
+
 ## 🚀 Quick Start
 
 ```bash
@@ -69,115 +166,6 @@ job_families:
 ```
 
 Then use it: `make dev JOB_FAMILY=your-custom-setup`
-
-## 📋 Prerequisites
-
-- **Docker Desktop** 24.0+ installed and running
-- **Git** installed
-- **8GB RAM** minimum (16GB recommended)
-- **20GB free disk space**
-- **Internet connection** (for first-time image downloads)
-
-## 🏗️ Architecture & Why Docker?
-
-### Traditional Setup vs. Docker Approach
-
-```mermaid
-graph TD
-    subgraph "❌ Traditional Manual Setup"
-        A1[New Developer] --> B1[Install PostgreSQL]
-        B1 --> C1[Install Redis]
-        C1 --> D1[Install Node.js]
-        D1 --> E1[Configure Services]
-        E1 --> F1[Debug Conflicts]
-        F1 --> G1{Works?}
-        G1 -->|No| F1
-        G1 -->|Yes| H1[Start Coding]
-        
-        style A1 fill:#ff6b6b
-        style F1 fill:#ff6b6b
-        style G1 fill:#ff6b6b
-        style H1 fill:#51cf66
-    end
-    
-    subgraph "✅ Zero-to-Running Docker Setup"
-        A2[New Developer] --> B2[git clone]
-        B2 --> C2[cp .env.example .env]
-        C2 --> D2[make dev]
-        D2 --> E2[Start Coding]
-        
-        style A2 fill:#51cf66
-        style B2 fill:#51cf66
-        style C2 fill:#51cf66
-        style D2 fill:#51cf66
-        style E2 fill:#51cf66
-    end
-```
-
-**Time Comparison:**
-- **Traditional**: 2-3 days (plus debugging time)
-- **Zero-to-Running**: Under 10 minutes
-
-### Service Architecture
-
-```mermaid
-graph LR
-    subgraph "Your Machine"
-        DEV[Developer<br/>You write code]
-        
-        subgraph "Docker Containers"
-            FE[Frontend<br/>React + Vite<br/>:3000]
-            BE[Backend<br/>Node.js API<br/>:4000]
-            DB[(PostgreSQL<br/>Database<br/>:5432)]
-            CACHE[(Redis<br/>Cache<br/>:6379)]
-        end
-    end
-    
-    DEV -->|Edit code| FE
-    DEV -->|Edit code| BE
-    DEV -->|Direct access| DB
-    DEV -->|Direct access| CACHE
-    
-    FE -->|API calls| BE
-    BE -->|Queries| DB
-    BE -->|Cache| CACHE
-    
-    style DEV fill:#339af0
-    style FE fill:#51cf66
-    style BE fill:#51cf66
-    style DB fill:#fd7e14
-    style CACHE fill:#fd7e14
-```
-
-### Key Benefits
-
-```mermaid
-graph TD
-    A[Zero-to-Running] --> B[Version Consistency]
-    A --> C[Complete Isolation]
-    A --> D[Production Parity]
-    A --> E[Clean Teardown]
-    
-    B --> B1[Everyone runs<br/>PostgreSQL 15.2<br/>Redis 7.0.5<br/>Node 18.12]
-    C --> C1[Multiple projects<br/>Zero conflicts<br/>No port collisions]
-    D --> D1[Same containers<br/>Dev → Staging → Prod]
-    E --> E1[make clean removes<br/>everything<br/>No residue]
-    
-    style A fill:#339af0
-    style B fill:#51cf66
-    style C fill:#51cf66
-    style D fill:#51cf66
-    style E fill:#51cf66
-```
-
-**Why Docker Wins:**
-
-| Approach | Version Control | Resource Usage | Startup Time | Isolation | Production Parity |
-|----------|----------------|----------------|--------------|-----------|------------------|
-| **Manual Install** | ❌ Inconsistent | ✅ Light | ⚠️ Varies | ❌ None | ❌ Poor |
-| **Virtual Machines** | ✅ Good | ❌ Heavy (4-8GB) | ❌ 5-10 min | ✅ Complete | ⚠️ Moderate |
-| **Version Managers** | ⚠️ Languages only | ✅ Light | ✅ Fast | ❌ Partial | ❌ Poor |
-| **Docker (Our Choice)** | ✅ Perfect | ✅ Light | ✅ 1-2 min | ✅ Complete | ✅ Identical |
 
 ## 💡 Day-to-Day Commands
 
