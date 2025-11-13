@@ -34,8 +34,17 @@ fi
 if [ "$USE_YQ" = true ]; then
   COMPONENTS=$(yq eval ".job_families.$JOB_FAMILY.components[]" "$FAMILIES_FILE" 2>/dev/null | sort -u | tr '\n' ' ')
 else
-  # Basic YAML parsing (fallback)
-  COMPONENTS=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "    -" | sed 's/    - //' | sort -u | tr '\n' ' ')
+  # Basic YAML parsing (fallback) - extract section between this family and next
+  FAMILY_START=$(grep -n "^  $JOB_FAMILY:" "$FAMILIES_FILE" | cut -d: -f1)
+  NEXT_FAMILY_LINE=$(awk -v start="$FAMILY_START" 'NR > start && /^  [a-z-]*:/ {print NR; exit}' "$FAMILIES_FILE")
+  if [ -z "$NEXT_FAMILY_LINE" ]; then
+    # Last family, get to end of file
+    FAMILY_SECTION=$(sed -n "${FAMILY_START},\$p" "$FAMILIES_FILE")
+  else
+    # Get section up to next family
+    FAMILY_SECTION=$(sed -n "${FAMILY_START},$((NEXT_FAMILY_LINE-1))p" "$FAMILIES_FILE")
+  fi
+  COMPONENTS=$(echo "$FAMILY_SECTION" | grep "    -" | sed 's/    - //' | sort -u | tr '\n' ' ')
 fi
 
 if [ -z "$COMPONENTS" ]; then
