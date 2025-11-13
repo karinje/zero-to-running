@@ -28,9 +28,9 @@
 
 **Phase 4: Testing & Optimization (Week 4-5)**
 - ⏳ PR-016: Automated Testing Suite - **PENDING**
-- ⏳ PR-017: CI/CD Pipeline - Automated Setup Testing - **PENDING**
+- ⏳ PR-017: SSL/HTTPS Support for Local Development - **PENDING**
 - ⏳ PR-018: Performance Optimization & Caching - **PENDING**
-- ⏳ PR-019: Developer Experience - VS Code Integration - **PENDING**
+- ⏳ PR-019: Job Family-Based Service Configuration - **PENDING**
 - ⏳ PR-020: Security Hardening & Best Practices - **PENDING**
 
 **Additional Documentation & Polish**
@@ -1152,75 +1152,87 @@ E2E:
 
 ---
 
-### PR-017: CI/CD Pipeline - Automated Setup Testing
+### PR-017: SSL/HTTPS Support for Local Development
 **Priority:** P2
-**Estimated Effort:** 6 hours
-**Dependencies:** PR-016
+**Estimated Effort:** 4 hours
+**Dependencies:** PR-007
 
 #### Description
-Create GitHub Actions workflow to automatically test the setup process on every PR and commit.
+Add support for local SSL/HTTPS to enable production-like testing, secure cookies, OAuth flows, and mobile device testing.
 
 #### Tasks
-- [ ] Create GitHub Actions workflow
-- [ ] Test setup on multiple OS (Ubuntu, macOS)
-- [ ] Validate docker-compose file
-- [ ] Run automated tests
-- [ ] Check documentation links
-- [ ] Validate environment files
-- [ ] Add status badges to README
+- [ ] Create SSL certificate generation script
+- [ ] Add certificate management commands
+- [ ] Configure backend to support HTTPS
+- [ ] Configure frontend (Vite) to support HTTPS
+- [ ] Add SSL enable/disable flag
+- [ ] Document certificate installation
+- [ ] Add browser trust instructions
+- [ ] Create certificate renewal process
 
 #### Files Created
 ```
 /
-├── .github/
-│   ├── workflows/
-│   │   ├── test-setup.yml
-│   │   ├── lint.yml
-│   │   └── docs-check.yml
-│   ├── PULL_REQUEST_TEMPLATE.md
-│   └── ISSUE_TEMPLATE/
-│       ├── bug_report.md
-│       └── feature_request.md
+├── scripts/
+│   ├── generate-certs.sh
+│   └── trust-cert.sh
+├── certs/
+│   ├── .gitkeep
+│   └── README.md
 └── docs/
-    └── CI_CD.md
+    └── SSL_SETUP.md
 ```
 
 #### Files Touched
-- `README.md` (add status badges)
-- `.gitignore` (ensure CI artifacts ignored)
+- `docker-compose.yml` (add cert volumes, HTTPS ports)
+- `backend/src/index.js` (HTTPS server support)
+- `frontend/vite.config.js` (HTTPS dev server)
+- `.env.example` (add ENABLE_SSL flag)
+- `Makefile` (add cert management commands)
 
-#### GitHub Actions Workflows
-```yaml
-# test-setup.yml
-- Checkout code
-- Install Docker
-- Copy .env.example to .env
-- Run `make dev`
-- Wait for health checks
-- Run automated tests
-- Run `make down`
-- Check cleanup
+#### SSL Configuration
+```bash
+# Enable SSL
+ENABLE_SSL=true
 
-# lint.yml
-- Run ESLint on backend
-- Run ESLint on frontend
-- Run Prettier check
-- Validate docker-compose.yml
-
-# docs-check.yml
-- Check for broken links
-- Validate markdown syntax
-- Check code examples in docs
+# Certificate paths
+SSL_CERT_PATH=./certs/localhost-cert.pem
+SSL_KEY_PATH=./certs/localhost-key.pem
 ```
 
+#### Usage
+```bash
+# Generate certificates
+make generate-certs
+
+# Trust certificate (macOS)
+make trust-cert
+
+# Start with SSL
+make dev ENABLE_SSL=true
+
+# Or in .env
+ENABLE_SSL=true
+make dev
+```
+
+#### Features
+- Self-signed certificates for localhost
+- Automatic certificate generation
+- Browser trust instructions (macOS, Linux, Windows)
+- HTTPS on ports 3443 (backend) and 3443 (frontend)
+- Fallback to HTTP if SSL disabled
+- Certificate renewal process
+
 #### Acceptance Criteria
-- [ ] Workflow runs on every PR
-- [ ] Tests pass on Ubuntu and macOS
-- [ ] Setup completes in < 10 minutes in CI
-- [ ] Failed builds block PR merge
-- [ ] Status badges visible in README
-- [ ] PR template guides contributors
-- [ ] Issue templates standardize bug reports
+- [ ] Can generate SSL certificates with one command
+- [ ] Backend serves HTTPS when enabled
+- [ ] Frontend serves HTTPS when enabled
+- [ ] Certificates can be trusted in browsers
+- [ ] HTTP still works when SSL disabled
+- [ ] Documentation explains setup process
+- [ ] Works on macOS, Linux, and Windows
+- [ ] Certificate renewal documented
 
 ---
 
@@ -1307,73 +1319,98 @@ Memory usage             2 GB      1 GB
 
 ---
 
-### PR-019: Developer Experience - VS Code Integration
-**Priority:** P3
-**Estimated Effort:** 4 hours
-**Dependencies:** PR-001
+### PR-019: Job Family-Based Service Configuration
+**Priority:** P2
+**Estimated Effort:** 6 hours
+**Dependencies:** PR-007
 
 #### Description
-Provide VS Code configuration for optimal developer experience with recommended extensions, debugging configs, and tasks.
+Implement job family-based service configuration allowing developers to select their role (full-stack, ML engineer, frontend, etc.) and automatically install relevant services, with ability to exclude specific components.
 
 #### Tasks
-- [ ] Create VS Code workspace configuration
-- [ ] Configure recommended extensions
-- [ ] Set up debugging configurations
-- [ ] Add VS Code tasks
-- [ ] Configure code formatting
-- [ ] Add snippets for common patterns
-- [ ] Document VS Code setup
+- [ ] Create job family mapping configuration file
+- [ ] Define job families (full-stack, backend, frontend, ML, data-engineer, etc.)
+- [ ] Implement component resolution logic (job family + exclusions)
+- [ ] Add job family selection to setup process
+- [ ] Support NO_* flags for component exclusions
+- [ ] Create helper commands (list-families, show-family)
+- [ ] Update docker-compose.yml for conditional service inclusion
+- [ ] Document job families and usage
 
 #### Files Created
 ```
 /
-├── .vscode/
-│   ├── settings.json
-│   ├── extensions.json
-│   ├── launch.json
-│   ├── tasks.json
-│   └── snippets/
-│       ├── javascript.json
-│       └── react.json
+├── config/
+│   └── job-families.yml
+├── scripts/
+│   ├── resolve-components.sh
+│   ├── validate-components.sh
+│   └── show-family.sh
 └── docs/
-    └── VSCODE_SETUP.md
+    └── JOB_FAMILIES.md
 ```
 
 #### Files Touched
-- `README.md` (mention VS Code setup)
-- `.gitignore` (exclude personal VS Code settings)
+- `Makefile` (add job family commands)
+- `docker-compose.yml` (conditional service profiles)
+- `README.md` (document job families)
+- `.env.example` (add JOB_FAMILY variable)
 
-#### Recommended Extensions
-```json
-{
-  "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "ms-azuretools.vscode-docker",
-    "bradlc.vscode-tailwindcss",
-    "dsznajder.es7-react-js-snippets",
-    "gruntfuggly.todo-tree",
-    "eamodio.gitlens"
-  ]
-}
+#### Job Families
+```yaml
+job_families:
+  full-stack:
+    components: [postgres, redis, backend, frontend]
+    description: "Full-stack web development"
+  
+  backend-engineer:
+    components: [postgres, redis, backend]
+    description: "Backend API development"
+  
+  frontend-engineer:
+    components: [frontend, backend]
+    description: "Frontend development"
+  
+  ml-engineer:
+    components: [postgres, jupyter, python, redis]
+    description: "Machine learning and data science"
+  
+  data-engineer:
+    components: [postgres, redis, jupyter]
+    description: "Data engineering and ETL"
+  
+  api-developer:
+    components: [postgres, redis, backend]
+    description: "REST/GraphQL API development"
 ```
 
-#### Debug Configurations
-```json
-// Debug backend in Docker
-// Debug frontend in Docker
-// Attach to running container
-// Debug tests
+#### Usage Examples
+```bash
+# Use job family
+make dev JOB_FAMILY=ml-engineer
+
+# Job family with exclusions
+make dev JOB_FAMILY=ml-engineer NO_REDIS=true
+
+# Multiple exclusions
+make dev JOB_FAMILY=full-stack NO_REDIS=true NO_FRONTEND=true
+
+# List available families
+make list-families
+
+# Show family components
+make show-family JOB_FAMILY=ml-engineer
 ```
 
 #### Acceptance Criteria
-- [ ] Extensions auto-suggest on project open
-- [ ] Debugging works from VS Code
-- [ ] Tasks run Docker commands from UI
-- [ ] Code formatting on save works
-- [ ] Snippets speed up development
-- [ ] Documentation explains setup
-- [ ] Works with VS Code Remote Containers
+- [ ] Can select job family via JOB_FAMILY flag
+- [ ] Job family installs all required components
+- [ ] NO_* flags exclude specific components
+- [ ] Component resolution handles dependencies
+- [ ] Helper commands work correctly
+- [ ] Documentation explains all job families
+- [ ] Can combine job family with exclusions
+- [ ] Validation prevents invalid combinations
 
 ---
 
@@ -1694,8 +1731,7 @@ Post-Release:
 ```
 PR-001 (Foundation)
   ├─→ PR-002 (PostgreSQL)
-  ├─→ PR-003 (Redis)
-  └─→ PR-019 (VS Code)
+  └─→ PR-003 (Redis)
 
 PR-002 (PostgreSQL)
   └─→ PR-004 (Backend)
@@ -1719,7 +1755,9 @@ PR-006 (Makefile)
 
 PR-007 (Docker Compose)
   ├─→ PR-014 (Profiles)
+  ├─→ PR-017 (SSL/HTTPS)
   ├─→ PR-018 (Performance)
+  ├─→ PR-019 (Job Families)
   └─→ PR-020 (Security)
 
 PR-008 (Documentation)
@@ -1734,7 +1772,7 @@ PR-015 (Pre-commit)
   └─→ PR-016 (Testing)
 
 PR-016 (Testing)
-  └─→ PR-017 (CI/CD)
+  └─→ (standalone)
 
 All PRs → PR-023 (Release)
 ```
@@ -1765,12 +1803,12 @@ All PRs → PR-023 (Release)
 - PR-014: Environment Profiles
 - PR-015: Pre-commit Hooks
 - PR-016: Testing Suite
-- PR-017: CI/CD
+- PR-017: SSL/HTTPS Support
+- PR-019: Job Family Configuration
 - PR-020: Security
 
 ### Nice to Have (P3) - Enhancements
 - PR-018: Performance
-- PR-019: VS Code Integration
 - PR-021: Video Tutorial
 - PR-022: Metrics
 
@@ -1802,11 +1840,11 @@ All PRs → PR-023 (Release)
 - Days 2-3: PR-014 (Profiles)
 - Day 3: PR-015 (Pre-commit)
 - Days 4-5: PR-016 (Testing)
-- Weekend: PR-017 (CI/CD)
+- Weekend: PR-017 (SSL/HTTPS)
 
 ### Week 5: Optimization & Release (PRs 18-23)
 - Day 1: PR-018 (Performance)
-- Day 2: PR-019 (VS Code)
+- Day 2: PR-019 (Job Families)
 - Day 3: PR-020 (Security)
 - Days 4-5: PR-021, PR-022, PR-023 (Final items)
 
