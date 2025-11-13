@@ -39,6 +39,8 @@ Once you run `make dev`, you'll have:
   - Database: `wander_dev`
   - Each developer gets their own isolated database (no shared connections)
 - **Cache**: Redis 7.0.5 at localhost:6379
+  - Password: `dev_redis_password` (configurable in `.env`)
+  - Isolated cache instance per developer
 
 All services are containerized, isolated, and communicate via Docker networks.
 
@@ -58,6 +60,7 @@ make help         # Show all available commands
 - [Quick Start Guide](docs/QUICK_START.md) - Detailed setup instructions
 - [Architecture Overview](docs/ARCHITECTURE.md) - System design and components
 - [Database Guide](docs/DATABASE.md) - PostgreSQL connection and usage
+- [Redis Guide](docs/REDIS.md) - Redis cache connection and usage
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
 - [API Documentation](docs/API.md) - Backend API reference
 

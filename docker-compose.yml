@@ -21,8 +21,30 @@ services:
     networks:
       - wander-network
 
+  redis:
+    image: redis:7.0.5-alpine
+    container_name: wander-redis
+    command: redis-server /usr/local/etc/redis/redis.conf
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev_redis_password}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-dev_redis_password}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - wander-network
+
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:
