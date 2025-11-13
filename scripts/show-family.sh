@@ -28,11 +28,11 @@ fi
 # Check if yq is available
 if command -v yq &> /dev/null; then
   DESCRIPTION=$(yq eval ".job_families.$JOB_FAMILY.description" "$FAMILIES_FILE" 2>/dev/null)
-  COMPONENTS=$(yq eval ".job_families.$JOB_FAMILY.components[]" "$FAMILIES_FILE" 2>/dev/null | tr '\n' '\n')
+  COMPONENTS=$(yq eval ".job_families.$JOB_FAMILY.components[]" "$FAMILIES_FILE" 2>/dev/null | sort -u | tr '\n' '\n')
 else
   # Basic parsing
   DESCRIPTION=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "description:" | sed 's/.*description: "\(.*\)"/\1/')
-  COMPONENTS=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "    -" | sed 's/    - //')
+  COMPONENTS=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "    -" | sed 's/    - //' | sort -u)
 fi
 
 if [ -z "$DESCRIPTION" ]; then

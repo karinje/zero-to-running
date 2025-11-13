@@ -32,10 +32,10 @@ fi
 
 # Extract components from job family
 if [ "$USE_YQ" = true ]; then
-  COMPONENTS=$(yq eval ".job_families.$JOB_FAMILY.components[]" "$FAMILIES_FILE" 2>/dev/null | tr '\n' ' ')
+  COMPONENTS=$(yq eval ".job_families.$JOB_FAMILY.components[]" "$FAMILIES_FILE" 2>/dev/null | sort -u | tr '\n' ' ')
 else
   # Basic YAML parsing (fallback)
-  COMPONENTS=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "    -" | sed 's/    - //' | tr '\n' ' ')
+  COMPONENTS=$(grep -A 10 "^  $JOB_FAMILY:" "$FAMILIES_FILE" | grep "    -" | sed 's/    - //' | sort -u | tr '\n' ' ')
 fi
 
 if [ -z "$COMPONENTS" ]; then

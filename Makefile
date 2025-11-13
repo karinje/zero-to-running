@@ -293,7 +293,7 @@ list-families: ## List all available job families
 			echo "$(GREEN)  $$family$(NC): $$desc"; \
 		done; \
 	else \
-		grep "^  [a-z-]*:" config/job-families.yml | sed 's/:$//' | sed 's/^  /  - /'; \
+		grep "^  [a-z-]*:" config/job-families.yml | sed 's/:$$//' | sed 's/^  /  - /'; \
 	fi
 
 show-family: ## Show components for a job family (usage: make show-family JOB_FAMILY=ml-engineer)
